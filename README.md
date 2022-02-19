@@ -54,6 +54,7 @@ If you just wish to run the unit tests without installing VisualStudio, this can
 - We'll need a method to create new accounts, so that the unit tests can interact with multiple accounts. Unit tests can pre-load account data straight into the ledger repository.
 
 5. In terms of validation and exception handling... 
+    
     a. What happens when incorrect input is entered?
     - first thought is we would throw an exception, however since we're already down in the 'business layer', likely that input validation would have already occurred. Additionally, the methods of our service are strongly typed, so providing invalid input (such as a string or characters instead of a decimal) is not possible.  
 
