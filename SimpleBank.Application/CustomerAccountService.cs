@@ -9,13 +9,19 @@ namespace SimpleBank.Application
     {
         private readonly ILedgerRepository _ledgerRepository;
 
-        private const string ACCOUNT_NUMBER_NOT_FOUND_MESSAGE = "Customer account number '{0}' does not exist!";
+        private const decimal NEW_ACCOUNT_STARTING_BALANCE = 0.00m;
         private const decimal MINIMUM_TRANSACTION_AMOUNT = 0.01m;
         private const decimal MINIMUM_ACCOUNT_BALANCE = 0.00m;
+        private const string ACCOUNT_NUMBER_NOT_FOUND_MESSAGE = "Customer account number '{0}' does not exist!";
 
         public CustomerAccountService(ILedgerRepository ledgerRepository)
         {
             _ledgerRepository = ledgerRepository;
+        }
+
+        public void CreateCustomerAccount(int accountNumber)
+        {
+            _ledgerRepository.CreateCustomerAccount(accountNumber, NEW_ACCOUNT_STARTING_BALANCE);
         }
 
         public TransactionResult Deposit(int accountNumber, decimal amount)

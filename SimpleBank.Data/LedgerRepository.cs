@@ -8,9 +8,9 @@ namespace SimpleBank.Data
     {
         private readonly Dictionary<int, decimal> _ledgerOfAccounts = new Dictionary<int, decimal>();
         
-        public void CreateCustomerAccount(int accountNumber)
+        public void CreateCustomerAccount(int accountNumber, decimal startingBalance)
         {
-            _ledgerOfAccounts.Add(accountNumber, 0.00m);
+            _ledgerOfAccounts.Add(accountNumber, startingBalance);
         }
 
         public bool CustomerAccountExists(int accountNumber)

@@ -1,12 +1,18 @@
 using FluentAssertions;
+using SimpleBank.Application.Interfaces;
 using SimpleBank.Application.Models;
+using SimpleBank.Data;
+using SimpleBank.Data.Interfaces;
 using Xunit;
 
 namespace SimpleBank.Application.Tests
 {
     public class CustomerAccountServiceBehaviourTests
     {
-        private CustomerAccountServiceTestHarness _testHarness;
+        private ICustomerAccountService _customerAccountService;
+
+        // injectables
+        private ILedgerRepository _ledgerRepository;
 
         private const int ACCOUNT_NUMBER_ALICE = 1;
         private const int ACCOUNT_NUMBER_BOB = 2;
@@ -14,7 +20,8 @@ namespace SimpleBank.Application.Tests
 
         public CustomerAccountServiceBehaviourTests()
         {
-            _testHarness = new CustomerAccountServiceTestHarness();
+            _ledgerRepository = new LedgerRepository();
+            _customerAccountService = new CustomerAccountService(_ledgerRepository);
         }
 
         #region MULTIPLE ACTION COMBO TESTS
@@ -23,20 +30,20 @@ namespace SimpleBank.Application.Tests
         public void WHEN_Alice_Deposits_30_AND_Withdraws_20_THEN_Alices_Balance_SHOULD_Be_10_AND_Banks_Balance_Should_Be_10_AND_Alice_Cannot_Withdraw_11()
         {
             // arrange
-            _testHarness.WithNewEmptyAccount(ACCOUNT_NUMBER_ALICE);
+            _customerAccountService.CreateCustomerAccount(ACCOUNT_NUMBER_ALICE);
 
             // act - initial deposit and withdrawal
-            TransactionResult transactionResult = _testHarness.Execute_Deposit(ACCOUNT_NUMBER_ALICE, 30.00m);
-            transactionResult = _testHarness.Execute_Withdraw(ACCOUNT_NUMBER_ALICE, 20.00m);
-            decimal bankTotalBalance = _testHarness.Execute_GetBankTotalBalance();
+            TransactionResult transactionResult = _customerAccountService.Deposit(ACCOUNT_NUMBER_ALICE, 30.00m);
+            transactionResult = _customerAccountService.Withdraw(ACCOUNT_NUMBER_ALICE, 20.00m);
+            decimal bankTotalBalance = _customerAccountService.GetBankTotalBalance();
 
             // assert
             transactionResult.CurrentBalance.Should().Be(10.00m);
             bankTotalBalance.Should().Be(10.00m);
 
             // act - follow up withdrawal attempt
-            transactionResult = _testHarness.Execute_Withdraw(ACCOUNT_NUMBER_ALICE, 11.00m);
-            bankTotalBalance = _testHarness.Execute_GetBankTotalBalance();
+            transactionResult = _customerAccountService.Withdraw(ACCOUNT_NUMBER_ALICE, 11.00m);
+            bankTotalBalance = _customerAccountService.GetBankTotalBalance();
 
             // assert - nothing should have changed
             transactionResult.CurrentBalance.Should().Be(10.00m);
@@ -60,14 +67,13 @@ namespace SimpleBank.Application.Tests
             decimal banksTotalBalance)
         {
             // arrange
-            _testHarness
-                .WithNewEmptyAccount(ACCOUNT_NUMBER_ALICE)
-                .WithNewEmptyAccount(ACCOUNT_NUMBER_BOB);
+            _customerAccountService.CreateCustomerAccount(ACCOUNT_NUMBER_ALICE);
+            _customerAccountService.CreateCustomerAccount(ACCOUNT_NUMBER_BOB);
 
             // act
-            TransactionResult transactionResultAlice = _testHarness.Execute_Deposit(ACCOUNT_NUMBER_ALICE, depositAmountForAlice);
-            TransactionResult transactionResultBob = _testHarness.Execute_Deposit(ACCOUNT_NUMBER_BOB, depositAmountForBob);
-            decimal bankTotalBalance = _testHarness.Execute_GetBankTotalBalance();
+            TransactionResult transactionResultAlice = _customerAccountService.Deposit(ACCOUNT_NUMBER_ALICE, depositAmountForAlice);
+            TransactionResult transactionResultBob = _customerAccountService.Deposit(ACCOUNT_NUMBER_BOB, depositAmountForBob);
+            decimal bankTotalBalance = _customerAccountService.GetBankTotalBalance();
 
             // assert
             transactionResultAlice.CurrentBalance.Should().Be(depositAmountForAlice);
@@ -90,16 +96,15 @@ namespace SimpleBank.Application.Tests
             decimal banksTotalBalance)
         {
             // arrange
-            _testHarness
-                .WithNewEmptyAccount(ACCOUNT_NUMBER_ALICE)
-                .WithNewEmptyAccount(ACCOUNT_NUMBER_BOB)
-                .WithNewEmptyAccount(ACCOUNT_NUMBER_SATOSHI);
+            _customerAccountService.CreateCustomerAccount(ACCOUNT_NUMBER_ALICE);
+            _customerAccountService.CreateCustomerAccount(ACCOUNT_NUMBER_BOB);
+            _customerAccountService.CreateCustomerAccount(ACCOUNT_NUMBER_SATOSHI);
 
             // act
-            TransactionResult transactionResultAlice = _testHarness.Execute_Deposit(ACCOUNT_NUMBER_ALICE, depositAmountForAlice);
-            TransactionResult transactionResultBob = _testHarness.Execute_Deposit(ACCOUNT_NUMBER_BOB, depositAmountForBob);
-            TransactionResult transactionResultSatoshi = _testHarness.Execute_Deposit(ACCOUNT_NUMBER_SATOSHI, depositAmountForSatoshi);
-            decimal bankTotalBalance = _testHarness.Execute_GetBankTotalBalance();
+            TransactionResult transactionResultAlice = _customerAccountService.Deposit(ACCOUNT_NUMBER_ALICE, depositAmountForAlice);
+            TransactionResult transactionResultBob = _customerAccountService.Deposit(ACCOUNT_NUMBER_BOB, depositAmountForBob);
+            TransactionResult transactionResultSatoshi = _customerAccountService.Deposit(ACCOUNT_NUMBER_SATOSHI, depositAmountForSatoshi);
+            decimal bankTotalBalance = _customerAccountService.GetBankTotalBalance();
 
             // assert
             transactionResultAlice.CurrentBalance.Should().Be(depositAmountForAlice);
@@ -130,17 +135,16 @@ namespace SimpleBank.Application.Tests
             decimal banksTotalBalance)
         {
             // arrange
-            _testHarness
-                .WithNewEmptyAccount(ACCOUNT_NUMBER_ALICE)
-                .WithNewEmptyAccount(ACCOUNT_NUMBER_BOB);
+            _customerAccountService.CreateCustomerAccount(ACCOUNT_NUMBER_ALICE);
+            _customerAccountService.CreateCustomerAccount(ACCOUNT_NUMBER_BOB);
 
-            _testHarness.Execute_Deposit(ACCOUNT_NUMBER_ALICE, startingBalanceForAlice);
-            _testHarness.Execute_Deposit(ACCOUNT_NUMBER_BOB, startingBalanceForBob);
+            _customerAccountService.Deposit(ACCOUNT_NUMBER_ALICE, startingBalanceForAlice);
+            _customerAccountService.Deposit(ACCOUNT_NUMBER_BOB, startingBalanceForBob);
 
             // act
-            TransactionResult transactionResultAlice = _testHarness.Execute_Withdraw(ACCOUNT_NUMBER_ALICE, withdrawalAmountForAlice);
-            TransactionResult transactionResultBob = _testHarness.Execute_Withdraw(ACCOUNT_NUMBER_BOB, withdrawalAmountForBob);
-            decimal bankTotalBalance = _testHarness.Execute_GetBankTotalBalance();
+            TransactionResult transactionResultAlice = _customerAccountService.Withdraw(ACCOUNT_NUMBER_ALICE, withdrawalAmountForAlice);
+            TransactionResult transactionResultBob = _customerAccountService.Withdraw(ACCOUNT_NUMBER_BOB, withdrawalAmountForBob);
+            decimal bankTotalBalance = _customerAccountService.GetBankTotalBalance();
 
             // assert
             transactionResultAlice.CurrentBalance.Should().Be(startingBalanceForAlice - withdrawalAmountForAlice);
@@ -168,20 +172,19 @@ namespace SimpleBank.Application.Tests
             decimal banksTotalBalance)
         {
             // arrange
-            _testHarness
-                .WithNewEmptyAccount(ACCOUNT_NUMBER_ALICE)
-                .WithNewEmptyAccount(ACCOUNT_NUMBER_BOB)
-                .WithNewEmptyAccount(ACCOUNT_NUMBER_SATOSHI);
+            _customerAccountService.CreateCustomerAccount(ACCOUNT_NUMBER_ALICE);
+            _customerAccountService.CreateCustomerAccount(ACCOUNT_NUMBER_BOB);
+            _customerAccountService.CreateCustomerAccount(ACCOUNT_NUMBER_SATOSHI);
 
-            _testHarness.Execute_Deposit(ACCOUNT_NUMBER_ALICE, startingBalanceForAlice);
-            _testHarness.Execute_Deposit(ACCOUNT_NUMBER_BOB, startingBalanceForBob);
-            _testHarness.Execute_Deposit(ACCOUNT_NUMBER_SATOSHI, startingBalanceForSatoshi);
+            _customerAccountService.Deposit(ACCOUNT_NUMBER_ALICE, startingBalanceForAlice);
+            _customerAccountService.Deposit(ACCOUNT_NUMBER_BOB, startingBalanceForBob);
+            _customerAccountService.Deposit(ACCOUNT_NUMBER_SATOSHI, startingBalanceForSatoshi);
 
             // act
-            TransactionResult transactionResultAlice = _testHarness.Execute_Withdraw(ACCOUNT_NUMBER_ALICE, withdrawalAmountForAlice);
-            TransactionResult transactionResultBob = _testHarness.Execute_Withdraw(ACCOUNT_NUMBER_BOB, withdrawalAmountForBob);
-            TransactionResult transactionResultSatoshi = _testHarness.Execute_Withdraw(ACCOUNT_NUMBER_SATOSHI, withdrawalAmountForSatoshi);
-            decimal bankTotalBalance = _testHarness.Execute_GetBankTotalBalance();
+            TransactionResult transactionResultAlice = _customerAccountService.Withdraw(ACCOUNT_NUMBER_ALICE, withdrawalAmountForAlice);
+            TransactionResult transactionResultBob = _customerAccountService.Withdraw(ACCOUNT_NUMBER_BOB, withdrawalAmountForBob);
+            TransactionResult transactionResultSatoshi = _customerAccountService.Withdraw(ACCOUNT_NUMBER_SATOSHI, withdrawalAmountForSatoshi);
+            decimal bankTotalBalance = _customerAccountService.GetBankTotalBalance();
 
             // assert
             transactionResultAlice.CurrentBalance.Should().Be(startingBalanceForAlice - withdrawalAmountForAlice);

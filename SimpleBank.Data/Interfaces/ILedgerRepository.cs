@@ -7,7 +7,7 @@
         /// </summary>
         /// <param name="accountNumber"></param>
         /// <param name="startingBalance"></param>
-        void CreateCustomerAccount(int accountNumber);
+        void CreateCustomerAccount(int accountNumber, decimal startingBalance);
 
         /// <summary>
         /// Check if a customer account exists in the database, for the provided account number.

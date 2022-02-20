@@ -1,6 +1,9 @@
 using FluentAssertions;
 using SimpleBank.Application.Exceptions;
+using SimpleBank.Application.Interfaces;
 using SimpleBank.Application.Models;
+using SimpleBank.Data;
+using SimpleBank.Data.Interfaces;
 using System;
 using Xunit;
 
@@ -8,16 +11,19 @@ namespace SimpleBank.Application.Tests
 {
     public class CustomerAccountServiceUnitTests
     {
-        private CustomerAccountServiceTestHarness _testHarness;
+        private ICustomerAccountService _customerAccountService;
+
+        // injectables
+        private ILedgerRepository _ledgerRepository;
 
         private const int ACCOUNT_NUMBER_ALICE = 1;
         private const int ACCOUNT_NUMBER_BOB = 2;
-
         private const string ACCOUNT_NUMBER_NOT_FOUND_EXCEPTION_MESSAGE_BOB = "Customer account number '2' does not exist!";
 
         public CustomerAccountServiceUnitTests()
         {
-            _testHarness = new CustomerAccountServiceTestHarness();
+            _ledgerRepository = new LedgerRepository();
+            _customerAccountService = new CustomerAccountService(_ledgerRepository);
         }
 
         #region GET BALANCE
@@ -26,10 +32,10 @@ namespace SimpleBank.Application.Tests
         public void WHEN_Customer_Account_Does_Not_Exist_THEN_GetBalance_SHOULD_Throw_CustomerAccountNotFoundException()
         {
             // arrange
-            _testHarness.WithNewEmptyAccount(ACCOUNT_NUMBER_ALICE);
+            _customerAccountService.CreateCustomerAccount(ACCOUNT_NUMBER_ALICE);
 
             // act
-            Action act = () => _testHarness.Execute_GetBalance(ACCOUNT_NUMBER_BOB);
+            Action act = () => _customerAccountService.GetBalance(ACCOUNT_NUMBER_BOB);
 
             // assert
             act.Should().Throw<CustomerAccountNotFoundException>()
@@ -46,12 +52,11 @@ namespace SimpleBank.Application.Tests
             decimal startingBalance)
         {
             // arrange
-            _testHarness
-                .WithNewEmptyAccount(ACCOUNT_NUMBER_ALICE)
-                .Execute_Deposit(ACCOUNT_NUMBER_ALICE, startingBalance);
+            _customerAccountService.CreateCustomerAccount(ACCOUNT_NUMBER_ALICE);
+            _customerAccountService.Deposit(ACCOUNT_NUMBER_ALICE, startingBalance);
 
             // act
-            TransactionResult transactionResult = _testHarness.Execute_GetBalance(ACCOUNT_NUMBER_ALICE);
+            TransactionResult transactionResult = _customerAccountService.GetBalance(ACCOUNT_NUMBER_ALICE);
 
             // assert
             transactionResult.CurrentBalance.Should().Be(startingBalance);
@@ -66,10 +71,10 @@ namespace SimpleBank.Application.Tests
         public void WHEN_Deposit_Is_Attempted_AND_Customer_Account_Does_Not_Exist_THEN_Deposit_SHOULD_Throw_CustomerAccountNotFoundException()
         {
             // arrange
-            _testHarness.WithNewEmptyAccount(ACCOUNT_NUMBER_ALICE);
+            _customerAccountService.CreateCustomerAccount(ACCOUNT_NUMBER_ALICE);
 
             // act
-            Action act = () => _testHarness.Execute_Deposit(ACCOUNT_NUMBER_BOB, 1.00m);
+            Action act = () => _customerAccountService.Deposit(ACCOUNT_NUMBER_BOB, 1.00m);
 
             // assert
             act.Should().Throw<CustomerAccountNotFoundException>()
@@ -84,10 +89,10 @@ namespace SimpleBank.Application.Tests
             decimal depositAmount)
         {
             // arrange
-            _testHarness.WithNewEmptyAccount(ACCOUNT_NUMBER_ALICE);
+            _customerAccountService.CreateCustomerAccount(ACCOUNT_NUMBER_ALICE);
 
             // act
-            TransactionResult transactionResult = _testHarness.Execute_Deposit(ACCOUNT_NUMBER_ALICE, depositAmount);
+            TransactionResult transactionResult = _customerAccountService.Deposit(ACCOUNT_NUMBER_ALICE, depositAmount);
 
             // assert
             transactionResult.CurrentBalance.Should().Be(0.00m);
@@ -105,12 +110,11 @@ namespace SimpleBank.Application.Tests
             decimal resultingBalance)
         {
             // arrange
-            _testHarness
-                .WithNewEmptyAccount(ACCOUNT_NUMBER_ALICE)
-                .Execute_Deposit(ACCOUNT_NUMBER_ALICE, startingBalance);
+            _customerAccountService.CreateCustomerAccount(ACCOUNT_NUMBER_ALICE);
+            _customerAccountService.Deposit(ACCOUNT_NUMBER_ALICE, startingBalance);
 
             // act
-            TransactionResult transactionResult = _testHarness.Execute_Deposit(ACCOUNT_NUMBER_ALICE, depositAmount);
+            TransactionResult transactionResult = _customerAccountService.Deposit(ACCOUNT_NUMBER_ALICE, depositAmount);
 
             // assert
             transactionResult.CurrentBalance.Should().Be(resultingBalance);
@@ -124,10 +128,10 @@ namespace SimpleBank.Application.Tests
         public void WHEN_Withdraw_Is_Attempted_AND_Customer_Account_Does_Not_Exist_THEN_Withdraw_SHOULD_Throw_CustomerAccountNotFoundException()
         {
             // arrange
-            _testHarness.WithNewEmptyAccount(ACCOUNT_NUMBER_ALICE);
+            _customerAccountService.CreateCustomerAccount(ACCOUNT_NUMBER_ALICE);
 
             // act
-            Action act = () => _testHarness.Execute_Withdraw(ACCOUNT_NUMBER_BOB, 1.00m);
+            Action act = () => _customerAccountService.Withdraw(ACCOUNT_NUMBER_BOB, 1.00m);
 
             // assert
             act.Should().Throw<CustomerAccountNotFoundException>()
@@ -144,12 +148,11 @@ namespace SimpleBank.Application.Tests
             decimal withdrawalAmount)
         {
             // arrange
-            _testHarness
-                .WithNewEmptyAccount(ACCOUNT_NUMBER_ALICE)
-                .Execute_Deposit(ACCOUNT_NUMBER_ALICE, startingBalance);
+            _customerAccountService.CreateCustomerAccount(ACCOUNT_NUMBER_ALICE);
+            _customerAccountService.Deposit(ACCOUNT_NUMBER_ALICE, startingBalance);
 
             // act
-            TransactionResult transactionResult = _testHarness.Execute_Withdraw(ACCOUNT_NUMBER_ALICE, withdrawalAmount);
+            TransactionResult transactionResult = _customerAccountService.Withdraw(ACCOUNT_NUMBER_ALICE, withdrawalAmount);
 
             // assert
             transactionResult.CurrentBalance.Should().Be(startingBalance);
@@ -164,10 +167,10 @@ namespace SimpleBank.Application.Tests
             decimal withdrawalAmount)
         {
             // arrange
-            _testHarness.WithNewEmptyAccount(ACCOUNT_NUMBER_ALICE);
+            _customerAccountService.CreateCustomerAccount(ACCOUNT_NUMBER_ALICE);
 
             // act
-            TransactionResult transactionResult = _testHarness.Execute_Withdraw(ACCOUNT_NUMBER_ALICE, withdrawalAmount);
+            TransactionResult transactionResult = _customerAccountService.Withdraw(ACCOUNT_NUMBER_ALICE, withdrawalAmount);
 
             // assert
             transactionResult.CurrentBalance.Should().Be(0.00m);
@@ -183,12 +186,11 @@ namespace SimpleBank.Application.Tests
             decimal resultingBalance)
         {
             // arrange
-            _testHarness
-                .WithNewEmptyAccount(ACCOUNT_NUMBER_ALICE)
-                .Execute_Deposit(ACCOUNT_NUMBER_ALICE, startingBalance);
+            _customerAccountService.CreateCustomerAccount(ACCOUNT_NUMBER_ALICE);
+            _customerAccountService.Deposit(ACCOUNT_NUMBER_ALICE, startingBalance);
 
             // act
-            TransactionResult transactionResult = _testHarness.Execute_Withdraw(ACCOUNT_NUMBER_ALICE, withdrawalAmount);
+            TransactionResult transactionResult = _customerAccountService.Withdraw(ACCOUNT_NUMBER_ALICE, withdrawalAmount);
 
             // assert
             transactionResult.CurrentBalance.Should().Be(resultingBalance);

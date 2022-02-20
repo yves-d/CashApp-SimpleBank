@@ -5,6 +5,12 @@ namespace SimpleBank.Application.Interfaces
     public interface ICustomerAccountService
     {
         /// <summary>
+        /// Create a new customer account with the specified account number.
+        /// </summary>
+        /// <param name="accountNumber"></param>
+        void CreateCustomerAccount(int accountNumber);
+
+        /// <summary>
         /// Deposit into a customer's account.
         /// </summary>
         /// <param name="accountNumber"></param>
