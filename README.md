@@ -29,7 +29,9 @@ The command line option is probably the most straight-forward method of running 
 
 If you haven't already, install the [.Net Core 6 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/6.0) from Microsoft.
 
-Once installed, using your favourite console / terminal application, navigate to the root folder of where the solution has been copied to (the folder where the ``CashApp-SimpleBank.sln`` file is located), and type: ``dotnet test "./SimpleBank.Application.Tests/SimpleBank.Application.Tests.csproj"``, and hit Enter.
+Once installed, using your favourite console / terminal application, navigate to the root folder of where the solution has been copied to (the folder where the ``CashApp-SimpleBank.sln`` file is located), and type: 
+
+``dotnet test "./SimpleBank.Application.Tests/SimpleBank.Application.Tests.csproj"``, and hit Enter.
 
 Exact syntax may very, depending on your machine (Windows / Mac / Linux). The above syntax is for a Windows machine.
 
