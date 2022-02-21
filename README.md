@@ -86,7 +86,7 @@ Alternatively, if you already have Docker Desktop installed and don't want to bo
 
     d. Do we need to validate transactions with a zero amount, or negative amount for that matter?
     - Probably for zero amounts, in the real world, that would save an extra call to the database. There's no point to a zero amount transaction.
-    - Definitely for negative amounts. Can't have negative withdrawals artifically inflating a user's account.
+    - Definitely for negative amounts. Can't have negative withdrawals artifically inflating a user's account. Similarly, a negative deposit could overdraw an account, and thus violate the requirement to not allow account overdraws. This check should be implemented on both withdraws and deposits.
 
 6. Do we logically separate (different classes) the fetching of the bank's total balance, from that of the individual customer account actions, into a distinct service?
 - Initially I thought yes, as it sounds like something you would want a logical separation of (assuming there would be more functioanlity at the bank-wide level). However on second thought, it would be overkill for these purposes, as fetching the bank's total balance is something that would likely leverage the actual database employed (an SQL Sum method, for example). Creating an additional service just for that one method which contains only retrieval logic (nothing calculated in code) is therefore not warranted.
