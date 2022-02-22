@@ -134,7 +134,7 @@ Ordinarily, if this solution were running in a server environment (for example),
 
 The main entry-point into the SimpleBank.Application functionality is through the CustomerAccountService. 
 
-The CustomerAccountService itself has a single dependency, the 'ILedgerRepository' - an interface to represent the data layer (more on the ILedgerRepository below). In production code, the passing of this interface to the CustomerAccountService would ordinarily be handled via dependency injection, through the dependency resolver of the running API project. However in this case, the unit test project is setting this class up and passing it in at runtime.
+The CustomerAccountService itself has a single dependency, the 'ILedgerRepository' - an interface to represent the data layer (more on the ILedgerRepository below). In production code, the passing of this interface to the CustomerAccountService would ordinarily be handled via dependency injection, through the dependency resolver of the running API project. In this case, as we effectively have the ability to run 'data-driven' tests, we can replicate the dependency resolutiona and injection setup that a hypothetical API server would perform, as we're not concerned with mocked/stubbed resources and responses.
 
 The CustomerAccountService implements the main methods specified in the requirements, namely the abilities to:
 - Deposit.
@@ -193,7 +193,7 @@ CustomerAccountServiceBehaviourTests runs the more complex tests, involving nume
 CustomerAccountServiceUnitTests runs targetted, fine-grained unit tests, designed to only test the behaviour and response of a single method. Although the tests here may rely on numerous methods to setup the test scenario, they are only concerned with the specific output of a single method.
 
 #### On how in-memory data influenced the testing approach
-In many ways, the choice to not persist data made the testing approach much simpler.
+In many ways, the choice to not persist data made the testing approach much simpler, as it allowed us to pursue data-driven tests with ease.
 
 Ordinarily in a real-world application, the data layer (ILedgerRepository, in this case) would have been represented by .Net Core's Entity Framework database context (or similar). Therefore when approaching unit tests, 'ILedgerRepository' would potentially have had to have been substituted with a mock implementation via an external mocking library. This would have meant that every interaction with the data layer would have required a mocked response, which would have blown out the size of test project.
 

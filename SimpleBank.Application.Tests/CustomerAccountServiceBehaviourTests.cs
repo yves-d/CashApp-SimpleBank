@@ -1,8 +1,10 @@
 using FluentAssertions;
+using Microsoft.Extensions.DependencyInjection;
 using SimpleBank.Application.Interfaces;
 using SimpleBank.Application.Models;
 using SimpleBank.Data;
 using SimpleBank.Data.Interfaces;
+using System;
 using Xunit;
 
 namespace SimpleBank.Application.Tests
@@ -11,8 +13,8 @@ namespace SimpleBank.Application.Tests
     {
         private ICustomerAccountService _customerAccountService;
 
-        // injectables
-        private ILedgerRepository _ledgerRepository;
+        // dependency collection
+        IServiceProvider _serviceProvider;
 
         private const int ACCOUNT_NUMBER_ALICE = 1;
         private const int ACCOUNT_NUMBER_BOB = 2;
@@ -20,8 +22,13 @@ namespace SimpleBank.Application.Tests
 
         public CustomerAccountServiceBehaviourTests()
         {
-            _ledgerRepository = new LedgerRepository();
-            _customerAccountService = new CustomerAccountService(_ledgerRepository);
+            //setup dependencies
+            _serviceProvider = new ServiceCollection()
+                .AddTransient<ICustomerAccountService, CustomerAccountService>()
+                .AddSingleton<ILedgerRepository, LedgerRepository>()
+                .BuildServiceProvider();
+
+            _customerAccountService = _serviceProvider.GetService<ICustomerAccountService>();
         }
 
         #region MULTIPLE ACTION COMBO TESTS
